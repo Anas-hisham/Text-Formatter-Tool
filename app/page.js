@@ -1,103 +1,368 @@
-import Image from "next/image";
+"use client"
+import React, { useState, useEffect } from "react";
+import {
+  Sun,
+  Moon,
+  Copy,
+  Download,
+  Type,
+  AlignJustify,
+  Hash,
+  FileJson,
+  CrownIcon as MarkdownIcon,
+  Eraser,
+  ArrowRight,
+} from "lucide-react";
 
-export default function Home() {
+function App() {
+  const [inputText, setInputText] = useState("");
+  const [outputText, setOutputText] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setIsDarkMode(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (copySuccess) {
+      const timer = setTimeout(() => setCopySuccess(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [copySuccess]);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  const handleTextChange = (e) => {
+    setInputText(e.target.value);
+    setError(null);
+  };
+
+  const convertToUpperCase = () => setOutputText(inputText.toUpperCase());
+
+  const convertToLowerCase = () => setOutputText(inputText.toLowerCase());
+
+  const capitalizeText = () => {
+    const capitalizedText = inputText
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+    setOutputText(capitalizedText);
+  };
+  const trimSpaces = () => {
+    let trimText = "";
+    for (let i = 0; i < inputText.length; i++) {
+      if (!(inputText[i] === " " && inputText[i - 1] === " ")) {
+        trimText += inputText[i];
+      }
+    }
+    trimText = trimText.trim();
+    setOutputText(trimText);
+  };
+
+  const clearText = () => {
+    setInputText("");
+    setOutputText("");
+    setError(null);
+  };
+
+  const getWordCount = (text) => {
+    let count = 0;
+    let inWord = false;
+
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] !== " ") {
+        if (!inWord) {
+          count++;
+          inWord = true;
+        }
+      } else {
+        inWord = false;
+      }
+    }
+
+    return count;
+  };
+
+  const getCharacterCount = (text) => {
+    return text.length;
+  };
+
+  const convertToJSON = () => {
+    try {
+      const words = inputText.trim().split(/\s+/);
+      const jsonObj = {
+        text: inputText,
+        words,
+        wordCount: words.length,
+        characterCount: inputText.length,
+      };
+      setOutputText(JSON.stringify(jsonObj, null, 2));
+      setError(null);
+    } catch (error) {
+      setError("Error converting to JSON");
+      console.error("Error converting to JSON:", error);
+    }
+  };
+
+  const convertFromJSON = () => {
+    try {
+      if (!outputText.trim()) {
+        setError("Please enter valid JSON");
+        return;
+      }
+
+      const jsonObj = JSON.parse(outputText);
+      if (jsonObj.text) {
+        setOutputText(jsonObj.text);
+        setError(null);
+      } else {
+        setError("Invalid JSON: 'text' property not found");
+      }
+    } catch (error) {
+      setError("Invalid JSON format");
+      console.error("Error parsing JSON:", error);
+    }
+  };
+
+  const convertToMarkdown = () => {
+    const lines = inputText.split("\n");
+    const markdownText = lines
+      .map((line) => {
+        if (line.trim().startsWith("#")) {
+          return line;
+        }
+        return `> ${line}`;
+      })
+      .join("\n");
+    setOutputText(markdownText);
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(outputText);
+      setCopySuccess(true);
+    } catch (err) {
+      setError("Failed to copy text");
+      console.error("Failed to copy text:", err);
+    }
+  };
+
+  const downloadText = () => {
+    const blob = new Blob([outputText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "formatted-text.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div
+      className={`min-h-screen transition-colors duration-200 ${
+        isDarkMode ? "dark bg-gray-900" : "bg-gray-50"
+      }`}
+    >
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1
+            className={`text-3xl font-bold ${
+              isDarkMode ? "text-white" : "text-gray-900"
+            }`}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Text Formatter Tool
+          </h1>
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`p-2 rounded-lg ${
+              isDarkMode
+                ? "bg-gray-800 text-yellow-400"
+                : "bg-gray-200 text-gray-800"
+            }`}
           >
-            Read our docs
-          </a>
+            {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Input Section */}
+          <div
+            className={`p-4 rounded-lg ${
+              isDarkMode ? "bg-gray-800" : "bg-white"
+            } shadow-lg`}
+          >
+            <h2
+              className={`text-xl font-semibold mb-4 ${
+                isDarkMode ? "text-white" : "text-gray-900"
+              }`}
+            >
+              Input
+            </h2>
+            <textarea
+              value={inputText}
+              onChange={handleTextChange}
+              placeholder="Enter your text here..."
+              className={`w-full h-64 p-4 rounded-lg border ${
+                isDarkMode
+                  ? "bg-gray-700 text-white border-gray-600"
+                  : "bg-white text-gray-900 border-gray-300"
+              } focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
+            />
+            <div
+              className={`mt-4 grid grid-cols-2 gap-4 ${
+                isDarkMode ? "text-white" : "text-gray-900"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Hash size={20} />
+                <span className="font-semibold">Words:</span>
+                <span>{getWordCount(inputText)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Hash size={20} />
+                <span className="font-semibold">Characters:</span>
+                <span>{getCharacterCount(inputText)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Output Section */}
+          <div
+            className={`p-4 rounded-lg ${
+              isDarkMode ? "bg-gray-800" : "bg-white"
+            } shadow-lg`}
+          >
+            <h2
+              className={`text-xl font-semibold mb-4 ${
+                isDarkMode ? "text-white" : "text-gray-900"
+              }`}
+            >
+              Output
+            </h2>
+            <textarea
+              value={outputText}
+              readOnly
+              className={`w-full h-64 p-4 rounded-lg border ${
+                isDarkMode
+                  ? "bg-gray-700 text-white border-gray-600"
+                  : "bg-white text-gray-900 border-gray-300"
+              } focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
+            />
+            <div
+              className={`mt-4 grid grid-cols-2 gap-4 ${
+                isDarkMode ? "text-white" : "text-gray-900"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Hash size={20} />
+                <span className="font-semibold">Words:</span>
+                <span>{getWordCount(outputText)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Hash size={20} />
+                <span className="font-semibold">Characters:</span>
+                <span>{getCharacterCount(outputText)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Transformation Buttons */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button
+            onClick={convertToUpperCase}
+            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+          >
+            <Type size={20} /> Uppercase
+          </button>
+          <button
+            onClick={convertToLowerCase}
+            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
+          >
+            <Type size={20} /> Lowercase
+          </button>
+          <button
+            onClick={capitalizeText}
+            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-pink-500 text-white hover:bg-pink-600 transition-colors"
+          >
+            <Type size={20} /> Capitalize
+          </button>
+
+          <button
+            onClick={trimSpaces}
+            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
+          >
+            <AlignJustify size={20} /> Trim Spaces
+          </button>
+          <button
+            onClick={clearText}
+            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+          >
+            <Eraser size={20} /> Clear
+          </button>
+        </div>
+
+        {/* Format Buttons */}
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button
+            onClick={convertToJSON}
+            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
+          >
+            <FileJson size={20} /> To JSON
+          </button>
+          <button
+            onClick={convertFromJSON}
+            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors"
+          >
+            <FileJson size={20} /> From JSON
+          </button>
+          <button
+            onClick={convertToMarkdown}
+            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-indigo-500 text-white hover:bg-indigo-600 transition-colors"
+          >
+            <MarkdownIcon size={20} /> To Markdown
+          </button>
+          <button
+            onClick={copyToClipboard}
+            className={`flex items-center justify-center gap-2 p-3 rounded-lg transition-colors ${
+              copySuccess
+                ? "bg-green-500 hover:bg-green-600"
+                : "bg-gray-500 hover:bg-gray-600"
+            } text-white`}
+          >
+            <Copy size={20} /> {copySuccess ? "Copied!" : "Copy Output"}
+          </button>
+        </div>
+
+        {/* Download Button */}
+        <div className="mt-4">
+          <button
+            onClick={downloadText}
+            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-teal-500 text-white hover:bg-teal-600 transition-colors w-full"
+          >
+            <Download size={20} /> Download Output
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
+
+export default App;
