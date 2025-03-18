@@ -46,26 +46,31 @@ function App() {
     setError(null);
   };
 
-  const convertToUpperCase = () => setOutputText(inputText.toUpperCase());
+    const convertToUpperCase = () => setOutputText((prev) => (prev ? prev.toUpperCase() : inputText.toUpperCase()));
 
-  const convertToLowerCase = () => setOutputText(inputText.toLowerCase());
-
+  const convertToLowerCase = () => setOutputText((prev) => (prev ? prev.toLowerCase() : inputText.toLowerCase()));
+  
   const capitalizeText = () => {
-    const capitalizedText = inputText
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
-    setOutputText(capitalizedText);
+    setOutputText((prev) => {
+      const text = prev || inputText;
+      return text
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+    });
   };
+  
   const trimSpaces = () => {
-    let trimText = "";
-    for (let i = 0; i < inputText.length; i++) {
-      if (!(inputText[i] === " " && inputText[i - 1] === " ")) {
-        trimText += inputText[i];
+    setOutputText((prev) => {
+      let text = prev || inputText;
+      let trimText = "";
+      for (let i = 0; i < text.length; i++) {
+        if (!(text[i] === " " && text[i - 1] === " ")) {
+          trimText += text[i];
+        }
       }
-    }
-    trimText = trimText.trim();
-    setOutputText(trimText);
+      return trimText.trim();
+    });
   };
 
   const clearText = () => {
