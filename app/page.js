@@ -17,9 +17,16 @@ import {
 function App() {
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
+
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState(null);
+
+
+  const [isUppercase, setIsUppercase] = useState(false);
+  const [isLowercase, setIsLowercase] = useState(false);
+  const [isCapitalize, setIsCapitalize] = useState(false);
+  const [isTrim, setIsTrim] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
@@ -46,32 +53,55 @@ function App() {
     setError(null);
   };
 
-    const convertToUpperCase = () => setOutputText((prev) => (prev ? prev.toUpperCase() : inputText.toUpperCase()));
+  const convertToUpperCase = () => {
+    setIsLowercase(false)
+    setIsCapitalize(false)
+    setIsUppercase(true)
+    trimSpaces()
+    setOutputText(inputText.toUpperCase());
+  }
 
-  const convertToLowerCase = () => setOutputText((prev) => (prev ? prev.toLowerCase() : inputText.toLowerCase()));
-  
+  const convertToLowerCase = () => {
+    setIsUppercase(false)
+    setIsLowercase(true)
+    setIsCapitalize(false)
+    trimSpaces()
+    setOutputText(inputText.toLowerCase());
+  }
+
   const capitalizeText = () => {
-    setOutputText((prev) => {
-      const text = prev || inputText;
-      return text
+    setIsUppercase(false)
+    setIsLowercase(false)
+    setIsCapitalize(true)
+    trimSpaces()
+
+    const capitalizedText = inputText
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+    setOutputText(capitalizedText);
+  };
+  const trimSpaces = () => {
+    setIsTrim(true);
+  
+    let trimText = inputText.replace(/\s+/g, ' ').trim(); 
+    setInputText(trimText); 
+  
+    if (isLowercase) {
+      setOutputText(trimText.toLowerCase());
+    } else if (isUppercase) {
+      setOutputText(trimText.toUpperCase());
+    } else if (isCapitalize) {
+      const capitalizedText = trimText
         .split(" ")
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(" ");
-    });
+      setOutputText(capitalizedText);
+    } else {
+      setOutputText(trimText);
+    }
   };
   
-  const trimSpaces = () => {
-    setOutputText((prev) => {
-      let text = prev || inputText;
-      let trimText = "";
-      for (let i = 0; i < text.length; i++) {
-        if (!(text[i] === " " && text[i - 1] === " ")) {
-          trimText += text[i];
-        }
-      }
-      return trimText.trim();
-    });
-  };
 
   const clearText = () => {
     setInputText("");
@@ -175,26 +205,23 @@ function App() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-200 ${
-        isDarkMode ? "dark bg-gray-900" : "bg-gray-50"
-      }`}
+      className={`min-h-screen transition-colors duration-200 ${isDarkMode ? "dark bg-gray-900" : "bg-gray-50"
+        }`}
     >
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1
-            className={`text-3xl font-bold ${
-              isDarkMode ? "text-white" : "text-gray-900"
-            }`}
+            className={`text-3xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"
+              }`}
           >
             Text Formatter Tool
           </h1>
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`p-2 rounded-lg ${
-              isDarkMode
-                ? "bg-gray-800 text-yellow-400"
-                : "bg-gray-200 text-gray-800"
-            }`}
+            className={`p-2 rounded-lg ${isDarkMode
+              ? "bg-gray-800 text-yellow-400"
+              : "bg-gray-200 text-gray-800"
+              }`}
           >
             {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
           </button>
@@ -209,14 +236,12 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Input Section */}
           <div
-            className={`p-4 rounded-lg ${
-              isDarkMode ? "bg-gray-800" : "bg-white"
-            } shadow-lg`}
+            className={`p-4 rounded-lg ${isDarkMode ? "bg-gray-800" : "bg-white"
+              } shadow-lg`}
           >
             <h2
-              className={`text-xl font-semibold mb-4 ${
-                isDarkMode ? "text-white" : "text-gray-900"
-              }`}
+              className={`text-xl font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"
+                }`}
             >
               Input
             </h2>
@@ -224,16 +249,14 @@ function App() {
               value={inputText}
               onChange={handleTextChange}
               placeholder="Enter your text here..."
-              className={`w-full h-64 p-4 rounded-lg border ${
-                isDarkMode
-                  ? "bg-gray-700 text-white border-gray-600"
-                  : "bg-white text-gray-900 border-gray-300"
-              } focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
+              className={`w-full h-64 p-4 rounded-lg border ${isDarkMode
+                ? "bg-gray-700 text-white border-gray-600"
+                : "bg-white text-gray-900 border-gray-300"
+                } focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
             />
             <div
-              className={`mt-4 grid grid-cols-2 gap-4 ${
-                isDarkMode ? "text-white" : "text-gray-900"
-              }`}
+              className={`mt-4 grid grid-cols-2 gap-4 ${isDarkMode ? "text-white" : "text-gray-900"
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Hash size={20} />
@@ -250,30 +273,26 @@ function App() {
 
           {/* Output Section */}
           <div
-            className={`p-4 rounded-lg ${
-              isDarkMode ? "bg-gray-800" : "bg-white"
-            } shadow-lg`}
+            className={`p-4 rounded-lg ${isDarkMode ? "bg-gray-800" : "bg-white"
+              } shadow-lg`}
           >
             <h2
-              className={`text-xl font-semibold mb-4 ${
-                isDarkMode ? "text-white" : "text-gray-900"
-              }`}
+              className={`text-xl font-semibold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"
+                }`}
             >
               Output
             </h2>
             <textarea
               value={outputText}
               readOnly
-              className={`w-full h-64 p-4 rounded-lg border ${
-                isDarkMode
-                  ? "bg-gray-700 text-white border-gray-600"
-                  : "bg-white text-gray-900 border-gray-300"
-              } focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
+              className={`w-full h-64 p-4 rounded-lg border ${isDarkMode
+                ? "bg-gray-700 text-white border-gray-600"
+                : "bg-white text-gray-900 border-gray-300"
+                } focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
             />
             <div
-              className={`mt-4 grid grid-cols-2 gap-4 ${
-                isDarkMode ? "text-white" : "text-gray-900"
-              }`}
+              className={`mt-4 grid grid-cols-2 gap-4 ${isDarkMode ? "text-white" : "text-gray-900"
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Hash size={20} />
@@ -346,11 +365,10 @@ function App() {
           </button>
           <button
             onClick={copyToClipboard}
-            className={`flex items-center justify-center gap-2 p-3 rounded-lg transition-colors ${
-              copySuccess
-                ? "bg-green-500 hover:bg-green-600"
-                : "bg-gray-500 hover:bg-gray-600"
-            } text-white`}
+            className={`flex items-center justify-center gap-2 p-3 rounded-lg transition-colors ${copySuccess
+              ? "bg-green-500 hover:bg-green-600"
+              : "bg-gray-500 hover:bg-gray-600"
+              } text-white`}
           >
             <Copy size={20} /> {copySuccess ? "Copied!" : "Copy Output"}
           </button>
