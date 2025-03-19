@@ -22,10 +22,10 @@ function App() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState(null);
 
-
   const [isUppercase, setIsUppercase] = useState(false);
   const [isLowercase, setIsLowercase] = useState(false);
   const [isCapitalize, setIsCapitalize] = useState(false);
+  const [isCapitalizeSentences, setIsCapitalizeSentences] = useState(false);
   const [isTrim, setIsTrim] = useState(false);
 
   useEffect(() => {
@@ -54,26 +54,29 @@ function App() {
   };
 
   const convertToUpperCase = () => {
-    setIsLowercase(false)
-    setIsCapitalize(false)
-    setIsUppercase(true)
-    trimSpaces()
+    setIsLowercase(false);
+    setIsCapitalize(false);
+    setIsCapitalizeSentences(false);
+    setIsUppercase(true);
+    trimSpaces();
     setOutputText(inputText.toUpperCase());
-  }
+  };
 
   const convertToLowerCase = () => {
-    setIsUppercase(false)
-    setIsLowercase(true)
-    setIsCapitalize(false)
-    trimSpaces()
+    setIsUppercase(false);
+    setIsLowercase(true);
+    setIsCapitalize(false);
+    setIsCapitalizeSentences(false);
+    trimSpaces();
     setOutputText(inputText.toLowerCase());
-  }
+  };
 
   const capitalizeText = () => {
-    setIsUppercase(false)
-    setIsLowercase(false)
-    setIsCapitalize(true)
-    trimSpaces()
+    setIsUppercase(false);
+    setIsLowercase(false);
+    setIsCapitalize(true);
+    setIsCapitalizeSentences(false);
+    trimSpaces();
 
     const capitalizedText = inputText
       .split(" ")
@@ -81,12 +84,32 @@ function App() {
       .join(" ");
     setOutputText(capitalizedText);
   };
+
+  const capitalizeSentences = () => {
+    setIsUppercase(false);
+    setIsLowercase(false);
+    setIsCapitalize(false);
+    setIsCapitalizeSentences(true);
+    trimSpaces();
+
+    const sentences = inputText.split(/([.!?])\s*/);
+    let capitalizedText = "";
+
+    for (let i = 0; i < sentences.length; i += 2) {
+      const sentence = sentences[i];
+      const punctuation = sentences[i + 1] || "";
+      capitalizedText += sentence.charAt(0).toUpperCase() + sentence.slice(1).toLowerCase() + punctuation + " ";
+    }
+
+    setOutputText(capitalizedText.trim());
+  };
+
   const trimSpaces = () => {
     setIsTrim(true);
-  
-    let trimText = inputText.replace(/\s+/g, ' ').trim(); 
-    setInputText(trimText); 
-  
+
+    let trimText = inputText.replace(/\s+/g, ' ').trim();
+    setInputText(trimText);
+
     if (isLowercase) {
       setOutputText(trimText.toLowerCase());
     } else if (isUppercase) {
@@ -97,11 +120,21 @@ function App() {
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(" ");
       setOutputText(capitalizedText);
+    } else if (isCapitalizeSentences) {
+      const sentences = trimText.split(/([.!?])\s*/);
+      let capitalizedText = "";
+
+      for (let i = 0; i < sentences.length; i += 2) {
+        const sentence = sentences[i];
+        const punctuation = sentences[i + 1] || "";
+        capitalizedText += sentence.charAt(0).toUpperCase() + sentence.slice(1).toLowerCase() + punctuation + " ";
+      }
+
+      setOutputText(capitalizedText.trim());
     } else {
       setOutputText(trimText);
     }
   };
-  
 
   const clearText = () => {
     setInputText("");
@@ -328,7 +361,12 @@ function App() {
           >
             <Type size={20} /> Capitalize
           </button>
-
+          <button
+            onClick={capitalizeSentences}
+            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
+          >
+            <Type size={20} /> Capitalize Sentences
+          </button>
           <button
             onClick={trimSpaces}
             className="flex items-center justify-center gap-2 p-3 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
